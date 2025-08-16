@@ -36,6 +36,16 @@ SPDX-License-Identifier: MIT
 #define DEBOUNCE_TOLERANCE_MS 100
 
 /* === Private data type declarations ============================================================================== */
+
+typedef struct {
+    TickType_t press_time;
+    TickType_t release_time;
+    bool active;
+} long_press_t;
+
+/* === Private function declarations =============================================================================== */
+
+/* === Private variable definitions ================================================================================ */
 system_mode_t mode = MODE_UNSET;
 Board_t board;
 clock_t clock;
@@ -48,17 +58,6 @@ uint8_t last_state;
 
 volatile bool timeout = false;
 volatile uint8_t timeout_counter = 0;
-
-typedef struct {
-    TickType_t press_time;
-    TickType_t release_time;
-    bool active;
-} long_press_t;
-
-/* === Private function declarations =============================================================================== */
-
-/* === Private variable definitions ================================================================================ */
-
 /* === Public variable definitions ================================================================================= */
 
 /* === Private function definitions ================================================================================ */
