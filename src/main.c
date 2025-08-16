@@ -34,7 +34,7 @@ SPDX-License-Identifier: MIT
 /* === Macros definitions ========================================================================================== */
 #define LONG_PRESS_TIME_MS    3000
 #define DEBOUNCE_TOLERANCE_MS 100
-
+#define TIMEOUT               30
 /* === Private data type declarations ============================================================================== */
 system_mode_t mode = MODE_UNSET;
 Board_t board;
@@ -46,6 +46,7 @@ uint8_t digits[4] = {0, 0, 0, 0};
 uint8_t dots[4] = {0, 1, 0, 0};
 uint8_t last_state;
 uint16_t ticks = 1000;
+TickType_t last_interaction_time = 0;
 
 typedef struct {
     TickType_t press_time;
@@ -212,11 +213,15 @@ void ButtonTask(void * pvParameters) {
                 }
             }
             if (DigitalInputWasDeactivated(board->increment)) {
+                last_interaction_time = xTaskGetTickCount();
+
                 uint8_t min = (digits[2] * 10 + digits[3] + 1) % 60;
                 digits[2] = min / 10;
                 digits[3] = min % 10;
             }
             if (DigitalInputWasDeactivated(board->decrement)) {
+                last_interaction_time = xTaskGetTickCount();
+
                 uint8_t min = (digits[2] * 10 + digits[3] - 1 + 60) % 60;
                 digits[2] = min / 10;
                 digits[3] = min % 10;
@@ -225,6 +230,18 @@ void ButtonTask(void * pvParameters) {
                 mode = MODE_SET_TIME_HOURS;
                 DisplayFlashDigits(board->screen, 0, 1, 10);
             }
+
+            if ((xTaskGetTickCount() - last_interaction_time) > pdMS_TO_TICKS(30000)) {
+                // Se venció el timeout
+                if (last_state == MODE_UNSET) {
+                    mode = MODE_UNSET;
+                    DisplayFlashDigits(board->screen, 0, 3, 10);
+                } else {
+                    mode = MODE_HOME;
+                    DisplayFlashDigits(board->screen, 0, 0, 0);
+                }
+            }
+
             break;
 
         case MODE_SET_TIME_HOURS:
@@ -238,11 +255,15 @@ void ButtonTask(void * pvParameters) {
                 }
             }
             if (DigitalInputWasDeactivated(board->increment)) {
+                last_interaction_time = xTaskGetTickCount();
+
                 uint8_t horas = (digits[0] * 10 + digits[1] + 1) % 24;
                 digits[0] = horas / 10;
                 digits[1] = horas % 10;
             }
             if (DigitalInputWasDeactivated(board->decrement)) {
+                last_interaction_time = xTaskGetTickCount();
+
                 uint8_t horas = (digits[0] * 10 + digits[1] - 1 + 24) % 24;
                 digits[0] = horas / 10;
                 digits[1] = horas % 10;
@@ -256,6 +277,16 @@ void ButtonTask(void * pvParameters) {
                 }
             }
 
+            if ((xTaskGetTickCount() - last_interaction_time) > pdMS_TO_TICKS(30000)) {
+                // Se venció el timeout
+                if (last_state == MODE_UNSET) {
+                    mode = MODE_UNSET;
+                    DisplayFlashDigits(board->screen, 0, 3, 10);
+                } else {
+                    mode = MODE_HOME;
+                    DisplayFlashDigits(board->screen, 0, 0, 0);
+                }
+            }
             break;
 
         case MODE_SET_ALARM_MINUTES:
@@ -275,11 +306,15 @@ void ButtonTask(void * pvParameters) {
             }
 
             if (DigitalInputWasDeactivated(board->increment)) {
+                last_interaction_time = xTaskGetTickCount();
+
                 uint8_t min = (digits[2] * 10 + digits[3] + 1) % 60;
                 digits[2] = min / 10;
                 digits[3] = min % 10;
             }
             if (DigitalInputWasDeactivated(board->decrement)) {
+                last_interaction_time = xTaskGetTickCount();
+
                 uint8_t min = (digits[2] * 10 + digits[3] - 1 + 60) % 60;
                 digits[2] = min / 10;
                 digits[3] = min % 10;
@@ -288,6 +323,18 @@ void ButtonTask(void * pvParameters) {
                 mode = MODE_SET_ALARM_HOURS;
                 DisplayFlashDigits(board->screen, 0, 1, 10);
             }
+
+            if ((xTaskGetTickCount() - last_interaction_time) > pdMS_TO_TICKS(30000)) {
+                // Se venció el timeout
+                if (last_state == MODE_UNSET) {
+                    mode = MODE_UNSET;
+                    DisplayFlashDigits(board->screen, 0, 3, 10);
+                } else {
+                    mode = MODE_HOME;
+                    DisplayFlashDigits(board->screen, 0, 0, 0);
+                }
+            }
+
             break;
 
         case MODE_SET_ALARM_HOURS:
@@ -302,11 +349,15 @@ void ButtonTask(void * pvParameters) {
                 }
             }
             if (DigitalInputWasDeactivated(board->increment)) {
+                last_interaction_time = xTaskGetTickCount();
+
                 uint8_t hora = (digits[0] * 10 + digits[1] + 1) % 24;
                 digits[0] = hora / 10;
                 digits[1] = hora % 10;
             }
             if (DigitalInputWasDeactivated(board->decrement)) {
+                last_interaction_time = xTaskGetTickCount();
+
                 uint8_t hora = (digits[0] * 10 + digits[1] - 1 + 24) % 24;
                 digits[0] = hora / 10;
                 digits[1] = hora % 10;
@@ -330,6 +381,18 @@ void ButtonTask(void * pvParameters) {
                     }
                 }
             }
+
+            if ((xTaskGetTickCount() - last_interaction_time) > pdMS_TO_TICKS(30000)) {
+                // Se venció el timeout
+                if (last_state == MODE_UNSET) {
+                    mode = MODE_UNSET;
+                    DisplayFlashDigits(board->screen, 0, 3, 10);
+                } else {
+                    mode = MODE_HOME;
+                    DisplayFlashDigits(board->screen, 0, 0, 0);
+                }
+            }
+
             break;
 
         case MODE_ALARM_TRIGGERED:
